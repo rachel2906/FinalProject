@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include <QGraphicsPixmapItem>
 #include <QLabel>
 #include <QStatusBar>
 #include <QPixmap>
@@ -7,43 +8,11 @@
 #include <QVBoxLayout>
 #include <QGraphicsDropShadowEffect>
 #include <QTimer>
+#include <QFile>
+#include <QTextStream>
+#include <QListWidgetItem>
 
-// ================= MapView =================
-MapView::MapView(QWidget *parent) : QGraphicsView(parent) {
-    setDragMode(QGraphicsView::ScrollHandDrag);
-    setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-}
 
-void MapView::wheelEvent(QWheelEvent *event) {
-    const double scaleFactor = 1.15;
-    double currentScale = transform().m11();
-
-    if (event->angleDelta().y() > 0 && currentScale < 5.0) {
-        scale(scaleFactor, scaleFactor);
-    } else if (event->angleDelta().y() < 0 && currentScale > minScale) {
-        scale(1.0 / scaleFactor, 1.0 / scaleFactor);
-        if (transform().m11() < minScale) { // giữ không nhỏ hơn minScale
-            QTransform t;
-            t.scale(minScale, minScale);
-            setTransform(t);
-        }
-    }
-}
-
-void MapView::keyPressEvent(QKeyEvent *event) {
-    const double scaleFactor = 1.15;
-    double currentScale = transform().m11();
-
-    if ((event->key() == Qt::Key_Plus || event->key() == Qt::Key_Equal) && currentScale < 5.0) {
-        scale(scaleFactor, scaleFactor);
-    } else if (event->key() == Qt::Key_Minus) {
-        resetTransform();
-    } else {
-        QGraphicsView::keyPressEvent(event);
-    }
-}
-
-// ================= MainWindow =================
 MainWindow::MainWindow() {
     QGraphicsScene *scene = new QGraphicsScene(this);
     setWindowTitle("Find the path in HCMUTE");
@@ -73,7 +42,115 @@ MainWindow::MainWindow() {
             initialTransform = view->transform(); //lưu transform gốc để reset
             qDebug() << "minScale set to:" << view->minScale;
         });
-    }
+        // ===== Panel Start-End =====
+        startEndWidget = new QWidget(view);
+        startEndWidget->setStyleSheet(
+            "background-color: rgba(240, 240, 240, 230);"
+            "border: 1px solid #999;"
+            "border-radius: 8px;"
+        );
+        startEndWidget->setFixedSize(300, 150);
+
+        QVBoxLayout *panelLayout = new QVBoxLayout(startEndWidget);
+        panelLayout->setContentsMargins(10, 8, 10, 8);
+        panelLayout->setSpacing(6);
+
+        // Start Edit
+        startEdit = new QLineEdit();
+        startEdit->setStyleSheet(
+            "background-color: white;"
+            "border: 1px solid #666;"
+            "border-radius: 4px;"
+            "padding: 4px;"
+        );
+        startEdit->setPlaceholderText("Start: Nhập địa điểm");
+        startEdit->installEventFilter(this);
+        panelLayout->addWidget(startEdit);
+
+        // End Edit
+        endEdit = new QLineEdit();
+        endEdit->setStyleSheet(
+            "background-color: white;"
+            "border: 1px solid #666;"
+            "border-radius: 4px;"
+            "padding: 4px;"
+        );
+        endEdit->setPlaceholderText("End: Nhập địa điểm");
+        endEdit->installEventFilter(this);
+        panelLayout->addWidget(endEdit);
+
+        // Find button
+        findBtn = new QPushButton("Tìm đường");
+        findBtn->setStyleSheet(
+            "QPushButton {"
+            "  background-color: #4CAF50;"
+            "  color: white;"
+            "  border: none;"
+            "  border-radius: 6px;"
+            "  padding: 6px;"
+            "  font-weight: bold;"
+            "}"
+            "QPushButton:hover {"
+            "  background-color: #45a049;"
+            "}"
+            "QPushButton:pressed {"
+            "  background-color: #3e8e41;"
+            "}"
+        );
+        panelLayout->addWidget(findBtn);
+
+        startEndWidget->move(20, 20);
+        startEndWidget->show();
+
+        // ===== Danh sách gợi ý =====
+        suggestionList = new QListWidget(view);
+        suggestionList->setStyleSheet(
+            "background-color: #ffffff;"
+            "border: 1px solid #aaa;"
+            "selection-background-color: #3399ff;"
+            "selection-color: white;"
+        );
+        suggestionList->setFixedWidth(startEndWidget->width());
+        suggestionList->setMaximumHeight(200);
+        suggestionList->hide();
+
+        //Font
+        QFont suggestionFont("Times New Roman", 11);
+        suggestionList->setFont(suggestionFont);
+
+        // Danh sách địa điểm
+        QFile file("D:/Discrete Mathematics and Graph Theory/Project/Resources/locations.txt");
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&file);
+            in.setCodec("UTF-8");   //tránh bị lỗi font khi đọc file 
+            while (!in.atEnd()) {
+                QString line = in.readLine().trimmed();
+                if (!line.isEmpty())
+                    locations << line;
+            }
+            file.close();
+        } else {
+            qDebug() << "Cannot open locations.txt!";
+        }
+
+        // Kết nối tín hiệu
+        connect(findBtn, &QPushButton::clicked, this, &MainWindow::onFindPathClicked);
+        connect(startEdit, &QLineEdit::textChanged, this, &MainWindow::onTextChanged);
+        connect(endEdit, &QLineEdit::textChanged, this, &MainWindow::onTextChanged);
+        connect(suggestionList, &QListWidget::itemClicked, this, &MainWindow::onSuggestionClicked);
+
+        // Enter chọn khi chỉ còn 1 item
+        connect(startEdit, &QLineEdit::returnPressed, this, [this]() {
+            if (suggestionList->count() == 1 && activeEdit)
+                activeEdit->setText(suggestionList->item(0)->text());
+            suggestionList->hide();
+        });
+        connect(endEdit, &QLineEdit::returnPressed, this, [this]() {
+            if (suggestionList->count() == 1 && activeEdit)
+                activeEdit->setText(suggestionList->item(0)->text());
+            suggestionList->hide();
+        });
+    }   
 
     // ===== Nút Zoom nổi =====
     zoomWidget = new QWidget(view);
@@ -143,6 +220,64 @@ MainWindow::MainWindow() {
     connect(zoomOutBtn, &QPushButton::clicked, [this]() {
         view->setTransform(initialTransform);
     });
+
+    // ===== Panel nhập tọa độ =====
+    coordWidget = new QWidget(view);
+    coordWidget->setStyleSheet(
+        "background-color: rgba(255, 255, 255, 200);"
+        "border: 1px solid #666;"
+        "border-radius: 6px;"
+    );
+    coordWidget->setFixedSize(150, 90);
+
+    QVBoxLayout *coordLayout = new QVBoxLayout(coordWidget);
+    coordLayout->setContentsMargins(5,5,5,5);
+    coordLayout->setSpacing(5);
+
+    // ô X
+    xEdit = new QLineEdit();
+    xEdit->setPlaceholderText("X");
+    coordLayout->addWidget(xEdit);
+
+    // ô Y
+    yEdit = new QLineEdit();
+    yEdit->setPlaceholderText("Y");
+    coordLayout->addWidget(yEdit);
+
+    // nút hiển thị
+    showBtn = new QPushButton("Hiển thị");
+    coordLayout->addWidget(showBtn);
+
+    coordWidget->move(20, 300); // góc trái
+    coordWidget->show();
+
+    connect(showBtn, &QPushButton::clicked, [this]() {
+    bool okX, okY;
+    double x = xEdit->text().toDouble(&okX);
+    double y = yEdit->text().toDouble(&okY);
+    if (!okX || !okY) return;
+
+    // Tạo một QGraphicsEllipseItem nhỏ làm marker
+    QGraphicsEllipseItem *marker = new QGraphicsEllipseItem(0, 0, 10, 10);
+    marker->setBrush(Qt::red);   // màu đỏ
+    marker->setPen(Qt::NoPen);
+    marker->setPos(x, y);        // tọa độ trên scene
+    view->scene()->addItem(marker);
+});
+}
+
+// ===== Event để hiện toàn bộ danh sách khi focus vào ô nhập =====
+bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+    if(event->type() == QEvent::FocusIn) {
+        if(obj==startEdit || obj==endEdit) {
+            activeEdit = qobject_cast<QLineEdit*>(obj);
+            suggestionList->clear();
+            for(const QString &loc : locations) suggestionList->addItem(loc);
+            suggestionList->move(startEndWidget->x(), startEndWidget->y() + startEndWidget->height() + 5);
+            suggestionList->show();
+        }
+    }
+    return QMainWindow::eventFilter(obj,event);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
@@ -159,7 +294,52 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
         int y = view->height() - zoomWidget->height() - 20; // 20 px từ cạnh dưới
         zoomWidget->move(x, y);
     }
+    if (startEndWidget) { 
+        startEndWidget->move(20, 20); // luôn cố định góc trái trên 
+    }
     QMainWindow::resizeEvent(event);
+}
+
+void MainWindow::onFindPathClicked() {
+    QString start = startEdit->text();
+    QString end = endEdit->text();
+    qDebug() << "Tìm đường từ" << start << "đến" << end;
+    // TODO: gọi thuật toán tìm đường ở đây
+}
+
+void MainWindow::onTextChanged(const QString &text) {
+    QLineEdit *edit = qobject_cast<QLineEdit*>(sender());
+    if (!edit) return;
+
+    activeEdit = edit;
+
+    suggestionList->clear();
+    if (text.isEmpty()) {
+        suggestionList->hide();
+        return;
+    }
+
+    // lọc theo text
+    for (const QString &loc : locations) {
+        if (loc.contains(text, Qt::CaseInsensitive)) {
+            suggestionList->addItem(loc);
+        }
+    }
+
+    if (suggestionList->count() > 0) {
+        // đặt vị trí ngay dưới panel
+        suggestionList->move(startEndWidget->x(), startEndWidget->y() + startEndWidget->height() + 5);
+        suggestionList->show();
+    } else {
+        suggestionList->hide();
+    }
+}
+
+void MainWindow::onSuggestionClicked(QListWidgetItem *item) {
+    if (activeEdit) {
+        activeEdit->setText(item->text());
+    }
+    suggestionList->hide();
 }
 
 
