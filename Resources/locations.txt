@@ -1,59 +1,56 @@
-Bãi xe sinh viên (góc trái)
-Kho thiết bị vật tư
-Khu xử lý nước thải
-Sân tennis
-Bãi xe oto
-Khối nhà L
-Phòng TN vật liệu
-Khối E0
-Xưởng thực tập hàn
-T.T K.T tổng hợp
-Khoa CNTT
-Khối E.4
-Khối E.3
-Xưởng in
-Nhà thi đấu
-Khối E.1
-Khối E.2 (trên)
-Khối E.2 (dưới)
-Hồ nước
-Phòng bảo vệ gần khối E
-Khối A.3
-Khối A.2
-Khối A.1
-Khối A.5
-Khối A.4
-Trạm điện
-Sân bóng đá ngoài trời
-Bãi xe sinh viên (góc phải dưới)
-Phòng bảo vệ (dưới)
-Bãi xe oto
 Bãi xe giáo viên
-Sân bóng chuyền
+Bãi xe ôtô
+Bãi xe sinh viên khu A
+Bãi xe sinh viên khu D
+Bãi xe sinh viên khu E
+Cửa hàng tiện lợi Thành Đạt
 Hội trường lớn
-Sân mái vòng
-Khoa công nghệ may
-Khối phòng học
+Khối A
+Khối A.1
+Khối A.2
+Khối A.3
+Khối A.4
+Khối A.5
+Khối B
+Khối C
 Khối D
-Khối A
-Khối A
-Khối thư viện
-Phòng Công tác HSSV
-Khối G
+Khối E.0
+Khối E.1
+Khối E.2
+Khối E.3
+Khối E.4
 Khối F.1
-Xưởng động cơ
-Khu Marker Space
-Khu dịch vụ hãng oto Toyota
-Khu thực hành Khoa Xây dựng
+Khối G
+Khối nhà L
+Khối phòng học
+Khối thư viện
+Khoa CNTT
+Khoa công nghệ may
 Khoa cơ khí động lực
-Xưởng thực tập Đồng Sơn
+Khu dịch vụ hãng ôtô Toyota
+Khu Marker Space
+Khu thực hành Khoa Xây dựng
+Khu xử lý nước thải
+Kho thiết bị vật tư
+Nhà thi đấu
+Phòng bảo vệ cổng chính Võ Văn Ngân
+Phòng bảo vệ cổng phụ Võ Văn Ngân
+Phòng bảo vệ khối E
+Phòng Công tác HSSV
+Phòng thí nghiệm Khoa Xây dựng
+Phòng thí nghiệm vật liệu
+Phòng y tế
+Sân bóng chuyền
+Sân bóng đá ngoài trời
+Sân mái vòm
+Sân tennis
+T.T K.T tổng hợp
+Văn phòng thư viện
+Xưởng động cơ
+Xưởng điện ôtô
+Xưởng in
 Xưởng khung gầm
 Xưởng nhiệt điện lạnh
-Xưởng điện oto
+Xưởng thực tập Đồng Sơn
 Xưởng thực tập gỗ
-Văn phòng thư viện
-Bãi xe sinh viên (góc phải trên)
-Khối C
-Khối B
-Phòng y tế
-Phòng thí nghiệm khoa xây dựng
+Xưởng thực tập hàn
