@@ -5,6 +5,11 @@
 #include <QWheelEvent>
 #include <QKeyEvent>
 
+#include <QGraphicsLineItem>
+#include <vector>
+#include <string>
+#include <QPen>
+
 class MapView : public QGraphicsView {
     Q_OBJECT
 protected:
@@ -15,6 +20,7 @@ public:
     MapView(QWidget *parent = nullptr);
     
     double minScale = 0.5; // map3 bị kích thước nên chỉnh lại
+
 };
 
 #endif
