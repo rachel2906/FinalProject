@@ -7,19 +7,10 @@
 using namespace std;
 
 class UTEPath {
-private:
-    // Ánh xạ tên địa điểm -> danh sách id node (các cửa ra vào)
-    static unordered_map<string, vector<int>> locationToNodes;
-
-    // Đồ thị toàn trường
-    static Graph graph;
-
-    // Hàm load dữ liệu ánh xạ từ mapping.txt
-    static void loadMapping(const string& filename); //vector<int> startNodes, vector<int> endNodes                 
-
 public:
-    // Hàm static: chỉ cần gọi UTEPath::findPath("A", "B")
+    static unordered_map<string, vector<int>> locationToNodes; // ánh xạ địa điểm -> danh sách node
+    static Graph graph; // đồ thị toàn trường
+
+    static void loadMapping(const string& filename = "../Resources/mapping.txt");
     static vector<int> findPath(const string& startLocation, const string& endLocation);
 };
-// vector <int> path = findPath("Cổng chính", "Thư viện");
-    
