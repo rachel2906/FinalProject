@@ -1,0 +1,57 @@
+"Phòng bảo vệ cổng phụ Võ Văn Ngân” 0
+"Bãi xe sinh viên khu E” 3
+"Kho thiết bị vật tư" 4
+"Khu xử lý nước thải" 
+"Sân tennis" 
+“Bãi xe ôtô" 5 6
+"Khối nhà L” 3 4
+"Phòng thí nghiệm vật liệu" 
+"Khối E.0" 12
+"Xưởng thực tập hàn" 7 8
+"T.T K.T tổng hợp" 
+"Khoa CNTT" 15 16
+"Khối E.4" 17
+"Khối E.3" 18
+"Xưởng in" 9
+"Nhà thi đấu" 10 21
+"Khối E.1" 20 22 23
+"Khối E.2" 
+"Cửa hàng tiện lợi Thành Đạt" 26 28
+"Phòng bảo vệ khối E" 29
+"Khối A.3" 30
+"Khối A.2"
+"Khối A.1" 36
+"Khối A.5"
+"Khối A.4"
+"Sân bóng đá ngoài trời" 38
+"Bãi xe sinh viên khu A" 40
+"Phòng bảo vệ cổng chính Võ Văn Ngân" 34
+"Bãi xe ôtô" 6
+"Bãi xe giáo viên" 37
+"Sân bóng chuyền" 39
+"Hội trường lớn" 45 47 48
+"Sân mái vòm" 81
+"Khoa công nghệ may" 49 
+"Khối phòng học" 
+"Khối D" 68
+"Khối A" 70 71
+"Khối thư viện" 65 66
+"Phòng Công tác HSSV" 64
+"Khối G" 85 86
+"Khối F.1" 82 83 84
+"Xưởng động cơ" 76
+"Khu Marker Space” 87 89
+"Khu dịch vụ hãng ôtô Toyota" 41
+"Khu thực hành Khoa Xây dựng" 77
+"Khoa cơ khí động lực" 74
+"Xưởng thực tập Đồng Sơn" 
+"Xưởng khung gầm" 
+"Xưởng nhiệt điện lạnh" 
+"Xưởng điện ôtô" 72
+"Xưởng thực tập gỗ" 
+"Văn phòng thư viện" 
+"Bãi xe sinh viên khu D" 51
+"Khối C" 58 59
+"Khối B" 56 60
+"Phòng y tế" 54
+"Phòng thí nghiệm khoa xây dựng" 
