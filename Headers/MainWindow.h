@@ -10,6 +10,9 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QGraphicsPathItem>
+#include <QPolygonF>
+#include <vector>
 
 
 class MainWindow : public QMainWindow {
@@ -23,10 +26,17 @@ private:
     QLineEdit *startEdit;      // ô nhập liệu Start
     QLineEdit *endEdit;        // ô nhập liệu End
     QPushButton *findBtn;
+    QWidget *introWidget;     //panel giới thiệu
+    QWidget *resultWidget;
+    QLabel *resultLabel;
 
     QListWidget *suggestionList;  // danh sách gợi ý
     QStringList locations;        // tất cả địa điểm có trong map
     QLineEdit *activeEdit;        // đang gõ vào ô nào (start/end)
+
+    QGraphicsPathItem* currentPathItem = nullptr;  // Đường đi hiện tại
+    QGraphicsEllipseItem *startMarker = nullptr;
+    QGraphicsEllipseItem *endMarker = nullptr;
 
     // test
     QWidget *coordWidget;
