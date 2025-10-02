@@ -3,6 +3,8 @@
 #include <QKeyEvent>
 #include <QDebug> 
 
+#include <QGraphicsScene>
+
 
 MapView::MapView(QWidget *parent) : QGraphicsView(parent) {
     setDragMode(QGraphicsView::ScrollHandDrag);
