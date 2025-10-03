@@ -1,4 +1,4 @@
-#include "MainWindow.h"
+#include "../Headers/MainWindow.h"
 #include "UTEpath.h"
 #include <QGraphicsPixmapItem>
 #include <QLabel>
@@ -418,7 +418,7 @@ void MainWindow::onFindPathClicked() {
 
     // Vẽ marker tròn cho start
     startMarker = new QGraphicsEllipseItem(-6, -6, 12, 12);
-    startMarker->setBrush(Qt::black);   // xanh cho điểm bắt đầu
+    startMarker->setBrush(Qt::black);   // đen cho điểm bắt đầu
     startMarker->setPen(Qt::NoPen);
     startMarker->setPos(firstPoint);
     view->scene()->addItem(startMarker);
@@ -431,17 +431,19 @@ void MainWindow::onFindPathClicked() {
     view->scene()->addItem(endMarker);
 
     // Tính tổng quãng đường
-    double totalDist = 0.0;
+    const double pxToMeter = 0.3; // đã qua thực nghiệm (1091, 1171) đến (870, 1139) là 70m, (1379, 1202) đến (1333, 1620) là 130m, (863, 1130) đến (930, 550) là 170m
+    double totalDistPx = 0.0;
     for (size_t i = 1; i < path.size(); ++i) {
         const Node &a = UTEPath::graph.getNode(path[i-1]);
         const Node &b = UTEPath::graph.getNode(path[i]);
         double dx = a.x - b.x;
         double dy = a.y - b.y;
-        totalDist += std::sqrt(dx*dx + dy*dy);
+        totalDistPx += std::sqrt(dx*dx + dy*dy);
     }
+    double totalDist = totalDistPx * pxToMeter;
 
-    // Giả sử tốc độ trung bình: 80 đơn vị / phút
-    double speed = 80.0;
+    // Tốc độ trung bình một người đi bộ: 5 km/h ~ 1.4m/s
+    double speed = 84.0; // mét/phút
     double travelTime = totalDist / speed;
 
     // Cập nhật kết quả
