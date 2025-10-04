@@ -2,6 +2,8 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <limits>
+#include <cmath>
 using namespace std;
 
 // ----------------- Node -----------------
@@ -107,3 +109,26 @@ bool Graph::loadFromFile(const string& filename) {
 
     return true;
 }
+
+int Graph::findNearestNodeId(double x, double y) const {
+    double minDistance = std::numeric_limits<double>::max();
+    int nearestId = -1;
+
+    for (const auto& pair : nodes) {
+        int id = pair.first;
+        const Node& node = pair.second;
+
+        // Tính khoảng cách Euclid
+        double dx = x - node.x;
+        double dy = y - node.y;
+        double distance = std::sqrt(dx * dx + dy * dy);
+
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearestId = id;
+        }
+    }
+
+    return nearestId;
+}
+
