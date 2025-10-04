@@ -1,4 +1,4 @@
-#include "MapView.h"
+#include "../Headers/MapView.h"
 #include <QWheelEvent>
 #include <QKeyEvent>
 #include <QDebug> 
@@ -47,3 +47,13 @@ void MapView::mousePressEvent(QMouseEvent *event) {
     QGraphicsView::mousePressEvent(event);
 }
 */
+void MapView::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) { // Chỉ xử lý click chuột trái
+        QPointF scenePos = mapToScene(event->pos());
+        // Phát tín hiệu kèm tọa độ scene
+        emit mapClicked(scenePos); 
+        // Không gọi QGraphicsView::mousePressEvent(event) nếu đang chờ chọn 
+        // để tránh xung đột với chức năng kéo bản đồ (ScrollHandDrag)
+    }
+    QGraphicsView::mousePressEvent(event); // Vẫn gọi để xử lý kéo/thả
+}
