@@ -1,7 +1,8 @@
-#include "../Headers/UTEPath.h"
+#include "../Headers/UTEpath.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <QString>
 
 // Khai báo static member
 Graph UTEPath::graph; 
@@ -34,6 +35,31 @@ void UTEPath::loadMapping(const string& filename) {
         int nodeId;
         while (ss >> nodeId) locationToNodes[location].push_back(nodeId);
     }
+}
+
+QString UTEPath::findNearestLocationName(double x, double y) {
+    // 1. Tìm Node ID gần nhất
+    int nearestNodeId = graph.findNearestNodeId(x, y);
+
+    if (nearestNodeId == -1) {
+        return ""; // Không tìm thấy node nào
+    }
+
+    // 2. Dùng Node ID tra cứu ngược lại trong mapping.txt
+    // Duyệt qua mapping để tìm xem node_id này thuộc địa điểm nào
+    for (const auto& pair : locationToNodes) {
+        const std::string& locationName = pair.first;
+        const std::vector<int>& nodeIds = pair.second;
+
+        // Kiểm tra xem nearestNodeId có nằm trong danh sách nodeIds của địa điểm này không
+        if (std::find(nodeIds.begin(), nodeIds.end(), nearestNodeId) != nodeIds.end()) {
+            // Đã tìm thấy tên địa điểm
+            return QString::fromStdString(locationName);
+        }
+    }
+
+    // Trường hợp node gần nhất không được ánh xạ (map) thành tên địa điểm nào
+    return "Vị trí đã chọn (" + QString::number(nearestNodeId) + ")"; 
 }
 
 // ---------------- Find Path ----------------
