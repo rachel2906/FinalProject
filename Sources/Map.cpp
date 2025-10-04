@@ -1,4 +1,4 @@
-#include "Map.h"
+#include "../Headers/Map.h"
 
 Map::Map(const QString& name) : name(name) {}
 
