@@ -15,12 +15,13 @@ class MapView : public QGraphicsView {
 protected:
     void wheelEvent(QWheelEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
-    //void mousePressEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
 public:
     MapView(QWidget *parent = nullptr);
     
     double minScale = 0.5; // map3 bị kích thước nên chỉnh lại
-
+signals:
+    void mapClicked(const QPointF &scenePos); // Tín hiệu mới: phát ra tọa độ scene khi click
 };
 
 #endif
