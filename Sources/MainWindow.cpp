@@ -68,7 +68,6 @@ MainWindow::MainWindow() {
 
         // Tên thành viên
         QLabel *membersLabel = new QLabel(
-            "Thành viên:\n"
             "- Huỳnh Vũ Minh Hiền\n"
             "- Nguyễn Quốc Bảo Khang\n"
             "- Lê Sĩ Nhật Khuê\n"
@@ -93,6 +92,11 @@ MainWindow::MainWindow() {
         panelLayout->setContentsMargins(10, 8, 10, 8);
         panelLayout->setSpacing(6);
 
+        // Hộp chứa Start Edit và nút Chọn vị trí Start
+        QWidget *startRow = new QWidget();
+        QHBoxLayout *startLayout = new QHBoxLayout(startRow);
+        startLayout->setContentsMargins(0,0,0,0);
+
         // Start Edit
         startEdit = new QLineEdit();
         startEdit->setStyleSheet(
@@ -103,7 +107,18 @@ MainWindow::MainWindow() {
         );
         startEdit->setPlaceholderText("Start: Nhập địa điểm");
         startEdit->installEventFilter(this);
-        panelLayout->addWidget(startEdit);
+        //panelLayout->addWidget(startEdit);
+        startLayout->addWidget(startEdit, 1); // 1: giãn ra
+        startPickBtn = new QPushButton("📍"); // Biểu tượng địa điểm
+        startPickBtn->setFixedSize(30, 30);
+        startPickBtn->setToolTip("Chọn vị trí Bắt đầu trên bản đồ");
+        startLayout->addWidget(startPickBtn);
+        panelLayout->addWidget(startRow);
+
+        // Hộp chứa End Edit và nút Chọn vị trí End
+        QWidget *endRow = new QWidget();
+        QHBoxLayout *endLayout = new QHBoxLayout(endRow);
+        endLayout->setContentsMargins(0,0,0,0);
 
         // End Edit
         endEdit = new QLineEdit();
@@ -115,7 +130,14 @@ MainWindow::MainWindow() {
         );
         endEdit->setPlaceholderText("End: Nhập địa điểm");
         endEdit->installEventFilter(this);
-        panelLayout->addWidget(endEdit);
+        //panelLayout->addWidget(endEdit);
+        endLayout->addWidget(endEdit, 1);
+        
+        endPickBtn = new QPushButton("📍");
+        endPickBtn->setFixedSize(30, 30);
+        endPickBtn->setToolTip("Chọn vị trí Kết thúc trên bản đồ");
+        endLayout->addWidget(endPickBtn);
+        panelLayout->addWidget(endRow);
 
         // Find button
         findBtn = new QPushButton("Tìm đường");
@@ -201,6 +223,13 @@ MainWindow::MainWindow() {
                 activeEdit->setText(suggestionList->item(0)->text());
             suggestionList->hide();
         });
+
+        // Kết nối mới cho nút Chọn vị trí
+        connect(startPickBtn, &QPushButton::clicked, this, &MainWindow::onPickStartClicked);
+        connect(endPickBtn, &QPushButton::clicked, this, &MainWindow::onPickEndClicked);
+        
+        // Kết nối tín hiệu click từ MapView
+        connect(view, &MapView::mapClicked, this, &MainWindow::onMapClicked);
 
         // ===== Panel kết quả (ẩn mặc định) =====
         resultWidget = new QWidget(view);
@@ -336,6 +365,41 @@ MainWindow::MainWindow() {
     view->scene()->addItem(marker);
 });
 
+    //note click vị trí
+    pickingNoteLabel = new QLabel(view);
+    pickingNoteLabel->setText("💡 **Click vào bản đồ** để chọn vị trí!");
+    pickingNoteLabel->setStyleSheet(
+        "background-color: #ffffe0;" // Màu nền vàng nhạt
+        "color: #333;"
+        "border: 1px solid #ffcc00;"
+        "border-radius: 4px;"
+        "padding: 6px;"
+        "font-weight: bold;"
+    );
+    pickingNoteLabel->adjustSize(); // Tự động điều chỉnh kích thước theo nội dung
+    
+
+    QTimer::singleShot(0, this, [this]() {
+        if (pickingNoteLabel) {
+            // Lấy kích thước của label (đã được adjustSize())
+            int labelWidth = pickingNoteLabel->width();
+            
+            // Tính toán vị trí X (ví dụ: đặt gần chính giữa bản đồ, lệch phải một chút)
+            // view->width() là chiều rộng của khu vực bản đồ hiển thị
+            int x_new = (view->width() / 2) - (labelWidth / 2) + 100; // Lệch sang phải 100px
+            
+            // Tính toán vị trí Y (ví dụ: cách mép trên 30px)
+            int y_new = 30; 
+            
+            // Đảm bảo label không bị ra ngoài biên trái (đặt tối thiểu là 20px)
+            if (x_new < 20) x_new = 20;
+
+            pickingNoteLabel->move(x_new, y_new);
+        }
+    });
+
+    pickingNoteLabel->hide(); // Ẩn mặc định
+
 }
 
 // ===== Event để hiện toàn bộ danh sách khi focus vào ô nhập =====
@@ -348,6 +412,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
             for(const QString &loc : locations) suggestionList->addItem(loc);
             suggestionList->move(startEndWidget->x(), startEndWidget->y() + startEndWidget->height() + 5);
             suggestionList->show();
+            pickingState = 0; 
         }
     }
     return QMainWindow::eventFilter(obj,event);
@@ -398,6 +463,18 @@ void MainWindow::onFindPathClicked() {
         view->scene()->removeItem(currentPathItem);
         delete currentPathItem;
         currentPathItem = nullptr;
+    }
+
+    // Xóa marker cũ nếu có
+    if (startMarker) {
+        view->scene()->removeItem(startMarker);
+        delete startMarker;
+        startMarker = nullptr;
+    }
+    if (endMarker) {
+        view->scene()->removeItem(endMarker);
+        delete endMarker;
+        endMarker = nullptr;
     }
 
     // Tạo đường mới
@@ -456,6 +533,7 @@ void MainWindow::onFindPathClicked() {
 }
 
 void MainWindow::onTextChanged(const QString &text) {
+    if (updatingFromMap) return;   // 🚫 Không hiển thị gợi ý khi cập nhật từ map
     QLineEdit *edit = qobject_cast<QLineEdit*>(sender());
     if(!edit) return;
     activeEdit = edit;
@@ -475,6 +553,70 @@ void MainWindow::onSuggestionClicked(QListWidgetItem *item) {
         activeEdit->setText(item->text());
     }
     suggestionList->hide();
+}
+
+// Hàm cho nút "Chọn vị trí Start"
+void MainWindow::onPickStartClicked() {
+    pickingState = 1; // Đang chọn Start
+    if (suggestionList) suggestionList->hide(); // Ẩn danh sách gợi ý
+    if (resultWidget) resultWidget->hide();     // Ẩn panel kết quả
+    
+    // 💡 Hiển thị ghi chú:
+    if (pickingNoteLabel) {
+        pickingNoteLabel->setText("💡 Click vào bản đồ để chọn vị trí BẮT ĐẦU!");
+        pickingNoteLabel->adjustSize();
+        pickingNoteLabel->show();
+    }
+}
+
+// Hàm cho nút "Chọn vị trí End"
+void MainWindow::onPickEndClicked() {
+    pickingState = 2; // Đang chọn End
+    if (suggestionList) suggestionList->hide(); // Ẩn danh sách gợi ý
+    if (resultWidget) resultWidget->hide();     // Ẩn panel kết quả
+    
+    // 💡 Hiển thị ghi chú:
+    if (pickingNoteLabel) {
+        pickingNoteLabel->setText("💡 Click vào bản đồ để chọn vị trí KẾT THÚC!");
+        pickingNoteLabel->adjustSize();
+        pickingNoteLabel->show();
+    }
+}
+
+// Hàm xử lý khi MapView báo đã click
+void MainWindow::onMapClicked(const QPointF &scenePos) {
+    if (pickingState == 0) return; // Không ở trạng thái chờ chọn
+    
+    QString locationName = UTEPath::findNearestLocationName(scenePos.x(), scenePos.y()); 
+
+    if (locationName.isEmpty()) {
+        QMessageBox::warning(this, "Lỗi", "Không tìm thấy địa điểm định danh gần vị trí đã click!");
+        pickingState = 0; // Thoát trạng thái chọn
+        return;
+    }
+
+    updatingFromMap = true; // Đánh dấu là cập nhật bằng map
+
+    if (pickingState == 1)                   // Đang chọn Start
+        startEdit->setText(locationName);
+    else if (pickingState == 2)             // Đang chọn End
+        endEdit->setText(locationName);
+
+     // Ẩn panel gợi ý
+    if (suggestionList && suggestionList->isVisible())
+        suggestionList->hide();
+
+    updatingFromMap = false; // ✅ Tắt đánh dấu
+    
+    //Kết thúc trạng thái chọn
+    pickingState = 0;
+    if (pickingNoteLabel) pickingNoteLabel->hide(); // 💡 Ẩn ghi chú sau khi chọn xong
+    
+    /*
+    //Nếu đã có đủ Start và End, tự động tìm đường
+    if (!startEdit->text().isEmpty() && !endEdit->text().isEmpty()) {
+        onFindPathClicked();
+    }*/
 }
 
 
