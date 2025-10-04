@@ -38,6 +38,15 @@ private:
     QGraphicsEllipseItem *startMarker = nullptr;
     QGraphicsEllipseItem *endMarker = nullptr;
 
+    QPushButton *startPickBtn; // Nút chọn vị trí cho Start
+    QPushButton *endPickBtn;   // Nút chọn vị trí cho End
+    
+    // Biến trạng thái: 0: không chọn, 1: đang chọn Start, 2: đang chọn End
+    int pickingState = 0; 
+    bool updatingFromMap = false; // ngăn không cho suggestionList show lại khi click chuột
+
+    QLabel *pickingNoteLabel; // Label mới để hiển thị ghi chú chọn vị trí
+
     // test
     QWidget *coordWidget;
     QLineEdit *xEdit;
@@ -47,6 +56,9 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override; // để phát hiện focus
+
+    void onPickStartClicked(); // Slot cho nút chọn Start
+    void onPickEndClicked();   // Slot cho nút chọn End
 public:
     MainWindow();
     ~MainWindow();
@@ -54,6 +66,8 @@ private slots:
     void onFindPathClicked();
     void onTextChanged(const QString &text);
     void onSuggestionClicked(QListWidgetItem *item);
+
+    void onMapClicked(const QPointF &scenePos); // Slot mới để nhận tọa độ click
 };
 
 #endif // MAINWINDOW_H
