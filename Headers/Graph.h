@@ -46,4 +46,6 @@ public:
 
     // ---- Tính toán ----
     static double calcDistance(const Node& a, const Node& b);
+
+    int findNearestNodeId(double x, double y) const; //Tìm ID của node gần nhất với tọa độ (x, y)
 };
